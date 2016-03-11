@@ -25,14 +25,28 @@ WHERE aid IN(SELECT aid
 ORDER BY pid DESC;
 
 --#3 IDs and names of customers who did not place an order through an agent a01
-SELECT name, cid
+--wrong
+/*SELECT name, cid
 FROM customers
 WHERE cid IN (SELECT cid
 		FROM orders
-               WHERE NOT aid = 'a01');
+               WHERE NOT aid = 'a01');*/
+SELECT cid, name
+FROM customers
+WHERE NOT cid IN (SELECT cid
+			FROM customers
+			WHERE cid IN (SELECT cid
+					FROM orders old
+				       WHERE aid = 'a01'));
 
 --#4 Ids of customers who ordered both product p01 and p07
-SELECT cid
+--wrong
+/*SELECT cid
+FROM orders
+WHERE pid = 'p01' AND cid IN(SELECT cid
+			       FROM orders
+			      WHERE pid = 'p07');*/
+SELECT DISTINCT cid
 FROM orders
 WHERE pid = 'p01' AND cid IN(SELECT cid
 			       FROM orders
@@ -61,7 +75,8 @@ WHERE cid IN (SELECT cid
 --#7 All customers who have the same discount as that of any customer in Dallas or London
 SELECT *
 FROM customers New
-WHERE New.discount = (SELECT Old.discount
+WHERE New.city != 'Dallas' AND New.city != 'London' 
+AND New.discount = ANY (SELECT Old.discount
 			FROM customers Old
 			WHERE Old.city = 'Dallas' OR Old.city = 'London');
 
